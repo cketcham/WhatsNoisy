@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, whatsnoisy!</string>
+    <string name="app_name">Whats Noisy</string>
+    <string name="trace_post_url">http://whatsnoisy.appspot.com</string>
+</resources>
