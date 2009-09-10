@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+	<EditText
+		android:id="@+id/title"
+		android:hint="Title"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_horizontal"
+		android:layout_marginBottom="5dp"
+		android:lines="1"
+		/>
+	<RadioGroup 
+		android:id="@+id/RadioGroup01" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content"
+		>
+		<RadioButton android:text="Noisy" android:id="@+id/noisy_button" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+		<RadioButton android:text="Cool" android:id="@+id/cool_button" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+	</RadioGroup>
+	<Button
+		android:id="@+id/submit_sample"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content" 
+	    android:text="Save Sample"
+	    />
+</LinearLayout>
