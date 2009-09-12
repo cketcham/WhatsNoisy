@@ -15,6 +15,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 public class SampleDatabase {
@@ -50,16 +51,18 @@ public class SampleDatabase {
 		+ KEY_LATITUDE + " double not null,"
 		+ KEY_TYPE + " text not null"
 		+ ");";
-	
-	private static final String TAG = null;
 
 	public static class SampleRow {
 		public Long key;
 		public String title;
 		public String path;
-		public Location location;
+		public Location location = new Location(LocationManager.GPS_PROVIDER);
 		public String type;
 		public Date datetime;
+		
+		public String getLocation() {
+			return Double.toString(this.location.getLatitude()) + "," + Double.toString(this.location.getLongitude());
+		}
 		
 		public String getDatetime() {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
@@ -208,9 +211,7 @@ public class SampleDatabase {
 	
 	public ArrayList <SampleRow>  fetchAllSamples() {
 		ArrayList<SampleRow> ret = new ArrayList<SampleRow>();
-		
-		try
-		{
+
 			Cursor c = db.query(DATABASE_TABLE, new String[] {KEY_ID, KEY_TITLE, KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE, KEY_TYPE}, null, null, null, null, null);
 			int numRows = c.getCount();
 			
@@ -225,6 +226,7 @@ public class SampleDatabase {
 				sr.path = c.getString(2);
 				sr.location.setLatitude(c.getDouble(3));
 				sr.location.setLongitude(c.getDouble(4));
+				sr.type = c.getString(5);
 				
 				ret.add(sr);
 				
@@ -232,10 +234,7 @@ public class SampleDatabase {
 				
 			}
 			c.close();			
-		}
-		catch (Exception e){
-			Log.e(TAG, e.getMessage());
-		}
+
 		return ret;
 	}
 
