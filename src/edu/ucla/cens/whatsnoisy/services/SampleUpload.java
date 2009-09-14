@@ -3,9 +3,13 @@ package edu.ucla.cens.whatsnoisy.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.apache.http.params.BasicHttpParams;
+import org.json.JSONException;
+import org.json.JSONStringer;
 
 import android.app.Activity;
 import android.app.Service;
@@ -24,19 +28,21 @@ public class SampleUpload extends Service{
 
 	private SampleDatabase sdb;
 	private static final String TAG = "SampleUploadThread";
-	protected static final int UPLOAD_SAMPLES = 0;
 	private static final String PREFERENCES_USER = "user";
 	private CustomHttpClient httpClient;
 	private SharedPreferences preferences;
+	private PostThread post;
 
 	@Override
 	public void onCreate() {
 		sdb = new SampleDatabase(this);
-		
-        preferences = getSharedPreferences(PREFERENCES_USER, Activity.MODE_PRIVATE);
+
+		preferences = getSharedPreferences(PREFERENCES_USER, Activity.MODE_PRIVATE);
 		httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
 
-		uploadSamples();
+		post = new PostThread();
+
+		post.start();
 	}
 
 	@Override
@@ -48,59 +54,80 @@ public class SampleUpload extends Service{
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "Stopping the thread");
+		post.exit();
 	}
 
-	public void uploadSamples() {
-		Log.d(TAG, "Uploading Samples");
+	public class PostThread extends Thread{
+		
+		public Boolean runThread = true;
+		
+		public void run(){
 
-		//list all trace files
-		sdb.openRead();
-		ArrayList<SampleRow>  entries = sdb.fetchAllSamples();
-		sdb.close();
-
-		Log.d(TAG, "Points to submit: " + Integer.toString(entries.size()));
-
-		for (int i=0; i < entries.size(); i++)
-		{
-			SampleRow sample = entries.get(i);
-			File file = null;
-			if ((sample.path != null) || (sample.path.toString() != ""))
-				file = new File(sample.path.toString());
-
-			try
-			{
-				Log.d(TAG, "Posting file");
-				if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation()))
+			try {
+				while(runThread)
 				{
-					/*if(file != null)
-					{
-						file.delete();
-					}*/
-					sdb.openWrite();
-					sdb.deleteSample(sample.key);
+
+					Log.d(TAG, "Running the thread");
+					Log.d(TAG, "Uploading Samples");
+
+					//list all trace files
+					sdb.openRead();
+					ArrayList<SampleRow>  entries = sdb.fetchAllSamples();
 					sdb.close();
-				}
+
+					Log.d(TAG, "Points to submit: " + Integer.toString(entries.size()));
+
+					for (int i=0; i < entries.size(); i++)
+					{
+						SampleRow sample = entries.get(i);
+						File file = null;
+						if ((sample.path != null) || (sample.path.toString() != ""))
+							file = new File(sample.path.toString());
+
+						try
+						{
+							Log.d(TAG, "Posting file");
+							if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation()))
+							{
+								if(file != null)
+								{
+									file.delete();
+								}
+								sdb.openWrite();
+								sdb.deleteSample(sample.key);
+								if (!sdb.hasSamples())
+								{
+									//no more samples so stop the uploadservice
+									SampleUpload.this.stopSelf();
+								}
+								sdb.close();
+							}
+						}
+						catch (Exception e) 
+						{
+							// TODO Auto-generated catch block
+							Log.d(TAG, "threw an IOException for sending file.");
+							e.printStackTrace();	
+						}
+						
+
+					}
+					
+					// Sleeping for 5 mintutes?
+					Thread.sleep(1*60000);
+					
+				} 
 			}
-			catch (Exception e) 
+			catch (InterruptedException e) 
 			{
 				// TODO Auto-generated catch block
-				Log.d(TAG, "threw an IOException for sending file.");
-				e.printStackTrace();	
+				e.printStackTrace();
 			}
 		}
-		
-		//start upload again in one minute
-		Message msg = Message.obtain(handler);
-		msg.arg1 = UPLOAD_SAMPLES;
-		handler.sendMessageDelayed(msg, 60000);
+	
+		public void exit()
+		{
+			runThread = false;
+		}
 	}
-
-	private final Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg){
-			if(msg.arg1 == UPLOAD_SAMPLES){
-				uploadSamples();
-			}
-		}
-	};
 }

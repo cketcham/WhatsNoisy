@@ -8,8 +8,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import edu.ucla.cens.whatsnoisy.whatsnoisy;
+import edu.ucla.cens.whatsnoisy.services.SampleUpload;
+
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -147,6 +151,7 @@ public class SampleDatabase {
 		vals.put(SampleDatabase.KEY_LONGITUDE, row.location.getLongitude());
 
 		long rowid = db.insert(DATABASE_TABLE, null, vals);
+		
 		return rowid;
 	}
 
@@ -198,6 +203,16 @@ public class SampleDatabase {
 		} else {
 			return false;
 		}
+	}
+	
+	public boolean hasSamples() {
+		Cursor c = db.query(DATABASE_TABLE, null, null, null, null, null, null, "1");
+		int count = c.getCount();
+		c.close();
+		if(count > 0)
+			return true;
+		else
+			return false;
 	}
 
 	public Cursor getSamples(String type) {

@@ -4,15 +4,15 @@
       android:versionCode="1"
       android:versionName="1.0">
     <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <activity android:name="whatsnoisy"
+        <activity android:name=".whatsnoisy"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="Record"></activity>
-        <activity android:name="RecordMetaData"></activity>
+        <activity android:name=".Record"></activity>
+        <activity android:name=".RecordMetaData"></activity>
 		
 		<service android:name="edu.ucla.cens.whatsnoisy.services.SampleUpload"></service>
     </application>
