@@ -4,5 +4,15 @@
     <string name="app_name">Whats Noisy</string>
     <string name="upload_url">http://cketcham.appspot.com/sample/new</string>
     <string name="trace_post_url">http://cketcham.appspot.com</string>
-    <string name="base_url">http://cketcham.appspot.com</string>
+	<string name="base_url">http://cketcham.appspot.com</string>
+    
+	<string name="settings_title">Settings</string>
+	<string name="location_service_quick_toggle_title">Location Service</string>
+	<string name="location_service_quick_toggle_summary">Use the GPS to determine your location</string>
+	<string name="location_trace_quick_toggle_title">Location Trace</string>
+	<string name="location_trace_quick_toggle_summary">Use the GPS to track your location</string>
+	<string name="location_upload_quick_toggle_title">Upload Location</string>
+	<string name="location_upload_quick_toggle_summary">Upload your location data to the server</string>
+	<string name="audio_upload_quick_toggle_title">Upload Audio</string>
+	<string name="audio_upload_quick_toggle_summary">Upload your audio data to the server</string>
 </resources>

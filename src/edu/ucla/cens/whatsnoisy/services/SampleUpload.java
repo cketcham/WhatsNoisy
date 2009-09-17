@@ -21,6 +21,7 @@ import android.os.Message;
 import android.util.Log;
 import edu.ucla.cens.whatsnoisy.tools.CustomHttpClient;
 import edu.ucla.cens.whatsnoisy.R;
+import edu.ucla.cens.whatsnoisy.Settings;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase.SampleRow;
 
@@ -28,19 +29,29 @@ public class SampleUpload extends Service{
 
 	private SampleDatabase sdb;
 	private static final String TAG = "SampleUploadThread";
-	private static final String PREFERENCES_USER = "user";
 	private CustomHttpClient httpClient;
 	private SharedPreferences preferences;
 	private PostThread post;
 
 	@Override
 	public void onCreate() {
+		super.onCreate();
+		
+		preferences = getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
+		
+		post = new PostThread();
+		
+		//do not upload if we aren't authenticated, or upload is turned off
+		Log.d(TAG, "toggle_audio_upload is " + preferences.getBoolean("toggle_audio_upload", false));
+		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_audio_upload", true))
+		{
+			stopSelf();
+		}
+		
 		sdb = new SampleDatabase(this);
-
-		preferences = getSharedPreferences(PREFERENCES_USER, Activity.MODE_PRIVATE);
+		
 		httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
 
-		post = new PostThread();
 
 		post.start();
 	}

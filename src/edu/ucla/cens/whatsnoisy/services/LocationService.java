@@ -2,11 +2,14 @@ package edu.ucla.cens.whatsnoisy.services;
 
 import edu.ucla.cens.virtualworld.services.ILocationService;
 import edu.ucla.cens.virtualworld.services.ILocationServiceCallback;
+import edu.ucla.cens.whatsnoisy.Settings;
 import edu.ucla.cens.whatsnoisy.services.LocationService;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,7 +28,7 @@ public class LocationService extends Service {
     
     @Override
     public void onCreate() {
-        
+    	
         //start location listener
         lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);    
     
@@ -47,7 +50,7 @@ public class LocationService extends Service {
 	public IBinder onBind(Intent intent) {
 		return binder;
 	}
-	
+
 	private final RemoteCallbackList<ILocationServiceCallback> m_callbacks = new RemoteCallbackList<ILocationServiceCallback>();
 	
 	private final ILocationService.Stub binder = new ILocationService.Stub(){		
@@ -62,6 +65,7 @@ public class LocationService extends Service {
 		@Override
 		public void unregisterCallback(ILocationServiceCallback cb)
 				throws RemoteException {
+			Log.d(TAG, "unregister callback");
 			if (cb != null) {
 				m_callbacks.unregister(cb);
 			}

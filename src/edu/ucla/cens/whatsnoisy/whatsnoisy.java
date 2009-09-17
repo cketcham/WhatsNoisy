@@ -18,11 +18,17 @@ import com.google.android.googlelogin.GoogleLoginServiceConstants;
 import com.google.android.googlelogin.GoogleLoginServiceHelper;
 
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
+import edu.ucla.cens.whatsnoisy.services.LocationService;
+import edu.ucla.cens.whatsnoisy.services.LocationTrace;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
+import edu.ucla.cens.whatsnoisy.Record;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,17 +36,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences.Editor;
 
 public class whatsnoisy extends Activity {
 
 	// An arbitrary constant to pass to the GoogleLoginHelperService
 	private static final int GET_ACCOUNT_REQUEST = 1;
-	private static final String TAG = null;
-	private static final String PREFERENCES_USER = "user";
-	protected static final int START_UPLOAD = 0;
+	private static final int RECORD_FINISHED = 0;
+	private static final String TAG = "whatsnoisy";
 	SharedPreferences preferences;
-	private Button Button;
 	private SampleDatabase stb;
 
 	/** Called when the activity is first created. */
@@ -49,33 +54,109 @@ public class whatsnoisy extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		preferences = getSharedPreferences(PREFERENCES_USER, Activity.MODE_PRIVATE);
+		preferences = this.getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
 
-		if(authorize()) {
-			Log.d(TAG, "authorized");
-		}
-
-		stb = new SampleDatabase(this);
-		stb.openRead();
-		if(stb.hasSamples()) {
-			Log.d(TAG,"sample database has samples");
-			Intent uploadService = new Intent(whatsnoisy.this, SampleUpload.class);
-			whatsnoisy.this.startService(uploadService);
-		}
-		stb.close();
-
-		//start recording intent
-		Intent act = new Intent(whatsnoisy.this, Record.class);
-		whatsnoisy.this.startActivity(act);
+		updateAuthToken();
 
 	}
+	
+	private void startServices() {
+		Intent service = new Intent();
+
+		service.setClass(this, LocationService.class);
+		startService(service);
+		
+		service.setClass(this, LocationTrace.class);
+		startService(service);
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		stopServices();
+	}
+	
+	private void stopServices() {
+		Intent service = new Intent();
+
+		Log.d(TAG,"Stop location service");
+		
+		service.setClass(this, LocationService.class);
+		stopService(service);
+		
+		service.setClass(this, LocationTrace.class);
+		stopService(service);
+	}
+
+
+	private class AuthorizeTask extends AsyncTask<Void, Void, Boolean> {
+
+		protected Boolean doInBackground(Void... progress) {
+			return authorize();
+		}
+
+		protected void onPostExecute(Boolean result) {
+			//save if we have been authenticated or not
+			preferences.edit().putBoolean("authenticated", result).commit();
+			
+			if(result) {
+				Log.d(TAG, "authorized");
+				
+				startServices();
+
+
+				stb = new SampleDatabase(whatsnoisy.this);
+				stb.openRead();
+				if(stb.hasSamples()) {
+					Log.d(TAG,"sample database has samples");
+					Intent uploadService = new Intent(whatsnoisy.this, SampleUpload.class);
+					whatsnoisy.this.startService(uploadService);
+				}
+				stb.close();
+				
+				//start recording intent
+				Intent act = new Intent(whatsnoisy.this, Record.class);
+				whatsnoisy.this.startActivityForResult(act, RECORD_FINISHED);
+
+
+			} else {
+				AlertDialog alert = new AlertDialog.Builder(whatsnoisy.this)
+				.setTitle("Could Not Authenticate")
+				.setMessage("Whats Noisy Could Not authenticate with Google. Please make sure this phone is linked to a google account and try again. You can continue but samples will not be uploaded until you are authenticated.")					
+				.setPositiveButton("Continue", new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						//start recording intent
+						Intent act = new Intent(whatsnoisy.this, Record.class);
+						whatsnoisy.this.startActivityForResult(act, RECORD_FINISHED);
+					}})
+				.setNegativeButton(android.R.string.cancel, new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						finish();
+					}})
+				.create();
+
+				alert.show();
+			}
+
+
+
+
+			
+		}
+
+	}
+
 
 	protected boolean authorize() {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 
 		String auth = preferences.getString("AUTHTOKEN", "");
 		if(auth=="") {
-			updateAuthToken();
 			return false;
 		}
 
@@ -129,24 +210,16 @@ public class whatsnoisy extends Activity {
 				if (intent != null) {
 					Bundle extras = intent.getExtras();
 					if (extras != null) {
-						final String account;
-						final String auth_token;
-						account = extras.getString(GoogleLoginServiceConstants.AUTH_ACCOUNT_KEY);
-						auth_token = extras.getString(GoogleLoginServiceConstants.AUTHTOKEN_KEY);
-						Log.d(TAG,"account: "+account);
-						Log.d(TAG,"authtoken: "+auth_token);
 
-						Editor edit = preferences.edit();
-						edit.putString("AUTHTOKEN", auth_token);
-						edit.commit();
+						preferences.edit().putString("AUTHTOKEN", extras.getString(GoogleLoginServiceConstants.AUTHTOKEN_KEY)).commit();
 
-						authorize();
+						new AuthorizeTask().execute();
 
 					}
 				}
-			} else {
-				finish();
-			}
+			} 
+		} else if (requestCode == RECORD_FINISHED) {
+			finish();
 		}
 	}
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import edu.ucla.cens.whatsnoisy.whatsnoisy;
 import edu.ucla.cens.whatsnoisy.R;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase.SampleRow;
@@ -19,12 +20,20 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcel;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
 public class Record extends Activity {
 	protected static final int SAVE_SAMPLE = 0;
 	protected static final String TAG = "recording";
+	
+	private static final int MENU_ABOUT = 0;
+	private static final int MENU_QUEUE = 1;
+	private static final int MENU_HELP = 2;
+	private static final int MENU_SETTINGS = 3;
+	
 	private Button recordButton;
 	private static AudioRecorder a;
 	private LocationManager lManager;
@@ -94,6 +103,10 @@ public class Record extends Activity {
 	}
 
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
 
 	
 
@@ -128,4 +141,36 @@ public class Record extends Activity {
 		}
 	}
 	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, MENU_ABOUT, 0, "About").setIcon(android.R.drawable.ic_menu_info_details);
+        menu.add(0, MENU_QUEUE, 2, "Queue").setIcon(android.R.drawable.ic_menu_sort_by_size);
+        menu.add(0, MENU_HELP, 1, "Help").setIcon(android.R.drawable.ic_menu_help);
+        menu.add(0, MENU_SETTINGS, 3, "Settings").setIcon(android.R.drawable.ic_menu_preferences);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent= null;
+
+        switch(item.getItemId()){
+        case MENU_ABOUT:
+            //intent = new Intent(this, About.class);
+            //this.startActivity(intent);
+
+            break;
+        case MENU_SETTINGS:
+            intent = new Intent(this, Settings.class);
+            this.startActivity(intent);
+
+            break;
+        case MENU_HELP:
+            // TODO: Open view specific dialog
+            break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }
