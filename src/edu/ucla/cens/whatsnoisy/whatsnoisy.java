@@ -91,11 +91,11 @@ public class whatsnoisy extends Activity {
 		service.setClass(this, LocationService.class);
 		stopService(service);
 		
-		service.setClass(this, LocationTrace.class);
-		stopService(service);
-		
-		service.setClass(this, LocationUpload.class);
-		stopService(service);
+//		service.setClass(this, LocationTrace.class);
+//		stopService(service);
+//		
+//		service.setClass(this, LocationUpload.class);
+//		stopService(service);
 	}
 
 

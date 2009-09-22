@@ -138,7 +138,6 @@ public class LocationUpload extends Service{
 
 						try
 						{
-							Log.d(TAG, "Posting file");
 							if(httpClient.doPost(getString(R.string.trace_post_url), params))
 							{
 
@@ -152,7 +151,7 @@ public class LocationUpload extends Service{
 						catch (Exception e) 
 						{
 							// TODO Auto-generated catch block
-							Log.d(TAG, "threw an IOException for sending file.");
+							Log.d(TAG, "threw an IOException for sending data.");
 							e.printStackTrace();	
 						}
 
