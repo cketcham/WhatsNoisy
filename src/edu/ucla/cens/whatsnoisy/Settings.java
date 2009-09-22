@@ -17,10 +17,12 @@
 package edu.ucla.cens.whatsnoisy;
 
 import edu.ucla.cens.whatsnoisy.services.LocationTrace;
+import edu.ucla.cens.whatsnoisy.services.LocationUpload;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
@@ -29,8 +31,12 @@ public class Settings extends PreferenceActivity {
 
 	private static final CharSequence KEY_TOGGLE_AUDIO_UPLOAD = "toggle_audio_upload";
 	private static final CharSequence KEY_TOGGLE_LOCATION_TRACE = "toggle_location_trace";
+	private static final CharSequence KEY_MIN_UPDATE_DISTANCE = "min_update_distance";
+	private static final CharSequence KEY_TOGGLE_LOCATION_UPLOAD = "toggle_location_upload";
+
 	
 	public static final String NAME = "edu.ucla.cens.whatsnoisy_preferences";
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,8 @@ public class Settings extends PreferenceActivity {
 					service.setClass(Settings.this, SampleUpload.class);
 				} else if(preference.getKey().equals(KEY_TOGGLE_LOCATION_TRACE)) {
 					service.setClass(Settings.this, LocationTrace.class);
+				} else if(preference.getKey().equals(KEY_TOGGLE_LOCATION_UPLOAD)) {
+					service.setClass(Settings.this, LocationUpload.class);
 				}
 				
 				if((Boolean) newValue) {
@@ -63,9 +71,15 @@ public class Settings extends PreferenceActivity {
 		
 		CheckBoxPreference audioUpload = (CheckBoxPreference) preferenceScreen.findPreference(KEY_TOGGLE_AUDIO_UPLOAD);
 		audioUpload.setOnPreferenceChangeListener(pcl);
+		
+		CheckBoxPreference locationUpload = (CheckBoxPreference) preferenceScreen.findPreference(KEY_TOGGLE_LOCATION_UPLOAD);
+		locationUpload.setOnPreferenceChangeListener(pcl);
 
 		CheckBoxPreference locationTrace = (CheckBoxPreference) preferenceScreen.findPreference(KEY_TOGGLE_LOCATION_TRACE);
 		locationTrace.setOnPreferenceChangeListener(pcl);
+		
+		EditTextPreference minDistance = (EditTextPreference) preferenceScreen.findPreference(KEY_MIN_UPDATE_DISTANCE);
+		minDistance.setDefaultValue("10");
 		
 		
 	}

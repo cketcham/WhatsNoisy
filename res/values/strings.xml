@@ -3,7 +3,7 @@
     <string name="hello">Hello World, whatsnoisy!</string>
     <string name="app_name">Whats Noisy</string>
     <string name="upload_url">http://cketcham.appspot.com/sample/new</string>
-    <string name="trace_post_url">http://cketcham.appspot.com</string>
+    <string name="trace_post_url">http://cketcham.appspot.com/location/new</string>
 	<string name="base_url">http://cketcham.appspot.com</string>
     
 	<string name="settings_title">Settings</string>

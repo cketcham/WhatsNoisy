@@ -43,14 +43,24 @@ public class LocationTrace extends Service {
 	private ServiceConnection conn;
 	private SharedPreferences preferences;
 	ILocationService mService;
+	private Location last_saved;
 
 	private final ILocationServiceCallback ILocationServiceCallback = new ILocationServiceCallback.Stub(){
 
 		@Override
 		public void locationUpdated(Location l) throws RemoteException {
-			Log.d(TAG, "Starting Location updated");
+			//Log.d(TAG, "Starting Location updated");
 
-			//saveToDatabase(l);
+			if(last_saved == null) {
+				saveToDatabase(l);
+				return;
+			}
+			
+			//Log.d(TAG, "distance between points = " + l.distanceTo(last_saved) + " " + new Long(preferences.getString("min_update_distance", "1")));
+			
+			if(last_saved != null && l.distanceTo(last_saved) >= new Long(preferences.getString("min_update_distance", "1"))){
+				saveToDatabase(l);
+			}
 
 		}
 
@@ -112,6 +122,8 @@ public class LocationTrace extends Service {
 		ldb.open();
 		ldb.createPoint(l);
 		ldb.close();
+		
+		last_saved = l;
 	
 	}
 

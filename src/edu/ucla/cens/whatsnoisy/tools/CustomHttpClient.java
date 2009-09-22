@@ -9,12 +9,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -29,6 +32,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HTTP;
 
 import edu.ucla.cens.whatsnoisy.whatsnoisy;
 
@@ -139,6 +143,49 @@ public class CustomHttpClient extends DefaultHttpClient {
 			return false;
 		}
 
+
+	}
+	
+	/*
+	 * this uses java.net.HttpURLConnection another way to do it is to use apache HttpPost
+	 * but the API seems a bit complicated. If you figure out how to use it and its more
+	 * efficient then let me know (vids@ucla.edu) Thanks.
+	 */
+	public boolean doPost(String url, List<NameValuePair> params) throws IOException 
+	{
+	DefaultHttpClient httpClient = new DefaultHttpClient();
+		
+		BasicClientCookie cookie = new BasicClientCookie("ACSID",authtoken);
+		cookie.setVersion(0);
+		String domain = url.split("/")[2];
+
+		cookie.setDomain(domain);
+		cookie.setPath("/");
+
+		CookieStore cs = httpClient.getCookieStore();
+		cs.addCookie(cookie);
+		
+		HttpPost request = new HttpPost(url.toString());
+
+		request.setEntity(new UrlEncodedFormEntity(params, HTTP.UTF_8));
+
+		HttpResponse response = httpClient.execute(request);
+
+		Log.d(TAG, "Doing HTTP Reqest");
+
+		int status = response.getStatusLine().getStatusCode();
+		Log.d(TAG, "Status Message: "+Integer.toString(status));
+
+		if(status == HttpStatus.SC_OK)
+		{
+			Log.d(TAG, "Sent data.");
+			return true;
+		}
+		else
+		{
+			Log.d(TAG, "Data not sent.");
+			return false;
+		}
 
 	}
 }

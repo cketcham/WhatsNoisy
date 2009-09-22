@@ -23,6 +23,7 @@
 		<service android:name="edu.ucla.cens.whatsnoisy.services.SampleUpload"></service>
 		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationTrace"></service>
 		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationService"></service>
+		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationUpload"></service>
     </application>
     <uses-sdk android:minSdkVersion="3" />
     <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>

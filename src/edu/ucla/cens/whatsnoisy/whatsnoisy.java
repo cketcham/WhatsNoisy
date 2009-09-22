@@ -17,9 +17,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import com.google.android.googlelogin.GoogleLoginServiceConstants;
 import com.google.android.googlelogin.GoogleLoginServiceHelper;
 
+import edu.ucla.cens.whatsnoisy.data.LocationDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
 import edu.ucla.cens.whatsnoisy.services.LocationService;
 import edu.ucla.cens.whatsnoisy.services.LocationTrace;
+import edu.ucla.cens.whatsnoisy.services.LocationUpload;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
 import edu.ucla.cens.whatsnoisy.Record;
@@ -46,8 +48,9 @@ public class whatsnoisy extends Activity {
 	private static final int RECORD_FINISHED = 0;
 	private static final String TAG = "whatsnoisy";
 	SharedPreferences preferences;
-	private SampleDatabase stb;
-
+	private SampleDatabase sdb;
+	private LocationDatabase ldb;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +71,9 @@ public class whatsnoisy extends Activity {
 		
 		service.setClass(this, LocationTrace.class);
 		startService(service);
+		
+		service.setClass(this, LocationUpload.class);
+		startService(service);
 	}
 	
 	@Override
@@ -86,6 +92,9 @@ public class whatsnoisy extends Activity {
 		stopService(service);
 		
 		service.setClass(this, LocationTrace.class);
+		stopService(service);
+		
+		service.setClass(this, LocationUpload.class);
 		stopService(service);
 	}
 
@@ -106,14 +115,23 @@ public class whatsnoisy extends Activity {
 				startServices();
 
 
-				stb = new SampleDatabase(whatsnoisy.this);
-				stb.openRead();
-				if(stb.hasSamples()) {
+				sdb = new SampleDatabase(whatsnoisy.this);
+				sdb.openRead();
+				if(sdb.hasSamples()) {
 					Log.d(TAG,"sample database has samples");
 					Intent uploadService = new Intent(whatsnoisy.this, SampleUpload.class);
 					whatsnoisy.this.startService(uploadService);
 				}
-				stb.close();
+				sdb.close();
+				
+				ldb = new LocationDatabase(whatsnoisy.this);
+				ldb.open();
+				if(ldb.hasSamples()) {
+					Log.d(TAG,"location database has locations");
+					Intent uploadService = new Intent(whatsnoisy.this, LocationUpload.class);
+					whatsnoisy.this.startService(uploadService);
+				}
+				ldb.close();
 				
 				//start recording intent
 				Intent act = new Intent(whatsnoisy.this, Record.class);

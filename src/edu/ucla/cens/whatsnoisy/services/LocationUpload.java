@@ -97,12 +97,13 @@ public class LocationUpload extends Service{
 
 					Log.d(TAG, "Points to submit: " + Integer.toString(entries.size()));
 
-					JSONStringer locjson = new JSONStringer();
-					locjson.array();
+					if(entries.size() != 0) {
+						JSONStringer locjson = new JSONStringer();
+						locjson.array();
 
-					for (int i=0; i < entries.size(); i++)
-					{
-						LocationRow locpoint = entries.get(i);
+						for (int i=0; i < entries.size(); i++)
+						{
+							LocationRow locpoint = entries.get(i);
 
 							locjson.object();
 							locjson.key("latitude");
@@ -112,55 +113,56 @@ public class LocationUpload extends Service{
 							locjson.key("time");
 							locjson.value(locpoint.location.getTime());
 							locjson.endObject();		
-					}
-					
-					locjson.endArray();
+						}
 
-					String xmldata = "<table><row>";
-					xmldata += "<field name=\"location\">";
-					xmldata += locjson.toString();
-					xmldata += "</field>";
-					xmldata += "<field name=\"datetime\">";
-					Date date = new Date();
-					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
-					xmldata += dateFormat.format(date);
-					xmldata += "</field>";						
-					xmldata += "</row></table>";
+						locjson.endArray();
 
-					
-					List<NameValuePair> params = new ArrayList<NameValuePair>();
-					params.add(new BasicNameValuePair("data_string", xmldata));
-					params.add(new BasicNameValuePair("type", "xml"));
+						String xmldata = "<table><row>";
+						xmldata += "<field name=\"location\">";
+						xmldata += locjson.toString();
+						xmldata += "</field>";
+						xmldata += "<field name=\"datetime\">";
+						Date date = new Date();
+						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
+						xmldata += dateFormat.format(date);
+						xmldata += "</field>";						
+						xmldata += "</row></table>";
 
 
+						List<NameValuePair> params = new ArrayList<NameValuePair>();
+						params.add(new BasicNameValuePair("data_string", xmldata));
+						params.add(new BasicNameValuePair("type", "xml"));
 
 
-					try
-					{
-						Log.d(TAG, "Posting file");
-						if(httpClient.doPost(getString(R.string.trace_post_url), params))
+
+
+						try
 						{
+							Log.d(TAG, "Posting file");
+							if(httpClient.doPost(getString(R.string.trace_post_url), params))
+							{
 
-							for (int i=0;i < entries.size(); i++) {
-								ldb.open();
-								ldb.deletePoint(entries.get(i).key);
-								ldb.close();
+								for (int i=0;i < entries.size(); i++) {
+									ldb.open();
+									ldb.deletePoint(entries.get(i).key);
+									ldb.close();
+								}
 							}
 						}
-					}
-					catch (Exception e) 
-					{
-						// TODO Auto-generated catch block
-						Log.d(TAG, "threw an IOException for sending file.");
-						e.printStackTrace();	
-					}
+						catch (Exception e) 
+						{
+							// TODO Auto-generated catch block
+							Log.d(TAG, "threw an IOException for sending file.");
+							e.printStackTrace();	
+						}
 
-
+					}
+					// Sleeping for 1 minutes?
+					Thread.sleep(1*60000);
 				}
-				
-				
-				// Sleeping for 1 minutes?
-				Thread.sleep(1*60000);
+
+
+
 
 
 			}
