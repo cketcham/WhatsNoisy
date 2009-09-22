@@ -158,7 +158,7 @@ public class LocationUpload extends Service{
 
 					}
 					// Sleeping for some minutes
-					Thread.sleep(new Long(preferences.getString("min_update_distance", "5"))*60000);
+					Thread.sleep(new Long(preferences.getString("location_upload_frequency", "5"))*60000);
 				}
 			}
 			catch (InterruptedException e) 
