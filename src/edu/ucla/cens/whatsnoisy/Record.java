@@ -19,11 +19,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcel;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class Record extends Activity {
 	protected static final int SAVE_SAMPLE = 0;
@@ -33,11 +35,14 @@ public class Record extends Activity {
 	private static final int MENU_QUEUE = 1;
 	private static final int MENU_HELP = 2;
 	private static final int MENU_SETTINGS = 3;
+	protected static final int UPDATE_TIME = 0;
 	
 	private Button recordButton;
 	private static AudioRecorder a;
 	private LocationManager lManager;
 	private SampleDatabase sdb;
+	
+	private TextView counter;
 
 
 	/** Called when the activity is first created. */
@@ -52,6 +57,12 @@ public class Record extends Activity {
 		
 		if(a == null)
 			a = new AudioRecorder();
+		
+		counter = (TextView)this.findViewById(R.id.timer);
+		
+		if(a.isRecording()) {
+			timerHandler.postDelayed(recordingTimer, 0);
+		}
 	}
 	
 	private void setRecordText(Button recordButton)
@@ -77,6 +88,9 @@ public class Record extends Activity {
 				if(!a.isRecording()) {
 					a = new AudioRecorder();
 					try {
+						startTime = SystemClock.uptimeMillis();
+						
+						timerHandler.postDelayed(recordingTimer, 0);
 						recordButton.setText("Stop Recording");
 						a.start();
 						
@@ -87,12 +101,15 @@ public class Record extends Activity {
 				} else {
 					try {
 						
-						a.stop();
-						recordButton.setText("Start Recording");
-
 						Intent recordMetaData = new Intent(Record.this, RecordMetaData.class);
 						Record.this.startActivityForResult(recordMetaData, SAVE_SAMPLE);
-
+						
+						a.stop();
+						
+						counter.setText("00:00:00");
+						timerHandler.removeCallbacks(recordingTimer);
+						recordButton.setText("Start Recording");
+						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -102,12 +119,19 @@ public class Record extends Activity {
 		});
 	}
 
-
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		
+		outState.putLong("startTime", startTime);
 	}
-
+	
+	@Override
+	public void onRestoreInstanceState(Bundle inState) {
+		super.onSaveInstanceState(inState);
+		
+		startTime = inState.getLong("startTime");
+	}
 	
 
 	protected void onActivityResult(int requestCode, int resultCode,
@@ -173,4 +197,25 @@ public class Record extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+    
+	private final Handler timerHandler = new Handler();
+	
+	private long startTime;
+	
+	/**
+	 * Runnable to handle timer ticker updates
+	 * */
+	private Runnable recordingTimer = new Runnable() {
+	   public void run() {
+	       final long start = startTime;
+	       long millis = SystemClock.uptimeMillis() - start;
+	       int secondsElapsed = (int) (millis / 1000);
+	       int seconds = (int) (millis / 1000);
+	       int minutes = (int) Math.floor(seconds/60.0);
+	       int hours = (int) Math.floor(minutes/60.0);
+	       seconds = seconds % 60;
+	       counter.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+	       timerHandler.postAtTime(this, start + (secondsElapsed + 1) * 1000);
+	   }
+	};
 }

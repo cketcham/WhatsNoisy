@@ -23,7 +23,6 @@ import edu.ucla.cens.whatsnoisy.services.LocationService;
 import edu.ucla.cens.whatsnoisy.services.LocationTrace;
 import edu.ucla.cens.whatsnoisy.services.LocationUpload;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
-import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
 import edu.ucla.cens.whatsnoisy.Record;
 
 import android.app.Activity;
@@ -34,6 +33,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;

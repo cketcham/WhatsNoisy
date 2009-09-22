@@ -4,10 +4,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+<TextView
+	android:textSize="80px"
+	android:text="00:00:00" 
+	android:id="@+id/timer" 
+	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content" 
+	android:gravity="center"
+	/>
 <Button
 	android:id="@+id/start"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:text="Start Recording"
     />
+
+
 </LinearLayout>

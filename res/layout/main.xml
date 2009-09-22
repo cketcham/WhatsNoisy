@@ -3,10 +3,15 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="#000000"
     >
 <TextView  
+	android:gravity="center"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:text="@string/hello"
+    android:textSize="50px"
     />
+<ImageView android:id="@+id/ImageView01" android:layout_width="wrap_content" android:layout_height="fill_parent"
+android:src="@drawable/microphone" />
 </LinearLayout>

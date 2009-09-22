@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, whatsnoisy!</string>
+    <string name="hello">What's Noisy!</string>
     <string name="app_name">Whats Noisy</string>
     <string name="upload_url">http://cketcham.appspot.com/sample/new</string>
     <string name="trace_post_url">http://cketcham.appspot.com/location/new</string>
