@@ -27,15 +27,20 @@
                 <EditTextPreference
                 	android:key="min_update_distance"
                 	android:title="Minimum Distance"
-                	android:summary="Minimum distance between saved Location points in Meters. Accuracy will be higher for lower distances, but more data points will have be collected and then uploaded. If you move more than this threshold value the point will be saved."
+                	android:summary="Minimum distance between saved Location points in Meters."
+                	android:persistent="true" /> 
+                	
+                <EditTextPreference
+                	android:key="location_upload_frequency"
+                	android:title="Location Upload Frequency"
+                	android:summary="The number of minutes to wait before uploading Locations again."
                 	android:persistent="true" /> 
                     
                 <CheckBoxPreference
                     android:key="toggle_location_upload"
                     android:title="@string/location_upload_quick_toggle_title"
                     android:summary="@string/location_upload_quick_toggle_summary"
-                    android:persistent="true" 
-                    android:dependency="toggle_location_trace" />
+                    android:persistent="true" />
 
                 <CheckBoxPreference
                     android:key="toggle_audio_upload"

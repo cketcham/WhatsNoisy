@@ -33,6 +33,7 @@ public class Settings extends PreferenceActivity {
 	private static final CharSequence KEY_TOGGLE_LOCATION_TRACE = "toggle_location_trace";
 	private static final CharSequence KEY_MIN_UPDATE_DISTANCE = "min_update_distance";
 	private static final CharSequence KEY_TOGGLE_LOCATION_UPLOAD = "toggle_location_upload";
+	private static final CharSequence KEY_LOCATION_UPLOAD_FREQUENCY = "location_upload_frequency";
 
 	
 	public static final String NAME = "edu.ucla.cens.whatsnoisy_preferences";
@@ -80,6 +81,9 @@ public class Settings extends PreferenceActivity {
 		
 		EditTextPreference minDistance = (EditTextPreference) preferenceScreen.findPreference(KEY_MIN_UPDATE_DISTANCE);
 		minDistance.setDefaultValue("10");
+		
+		EditTextPreference uploadFreq = (EditTextPreference) preferenceScreen.findPreference(KEY_LOCATION_UPLOAD_FREQUENCY);
+		uploadFreq.setDefaultValue("5");
 		
 		
 	}
