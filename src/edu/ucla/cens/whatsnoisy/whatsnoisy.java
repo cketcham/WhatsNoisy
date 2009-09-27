@@ -14,8 +14,10 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import com.google.android.googlelogin.GoogleLoginServiceBlockingHelper;
 import com.google.android.googlelogin.GoogleLoginServiceConstants;
 import com.google.android.googlelogin.GoogleLoginServiceHelper;
+import com.google.android.googlelogin.GoogleLoginServiceNotFoundException;
 
 import edu.ucla.cens.whatsnoisy.data.LocationDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
@@ -34,6 +36,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -50,7 +53,8 @@ public class whatsnoisy extends Activity {
 	SharedPreferences preferences;
 	private SampleDatabase sdb;
 	private LocationDatabase ldb;
-	
+	private String authToken = "";
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -59,59 +63,71 @@ public class whatsnoisy extends Activity {
 
 		preferences = this.getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
 
-		updateAuthToken();
-
+		new AuthorizeTask().execute();
 	}
-	
+
 	private void startServices() {
 		Intent service = new Intent();
 
 		service.setClass(this, LocationService.class);
 		startService(service);
-		
+
 		service.setClass(this, LocationTrace.class);
 		startService(service);
-		
+
 		service.setClass(this, LocationUpload.class);
 		startService(service);
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+
 		stopServices();
 	}
-	
+
 	private void stopServices() {
 		Intent service = new Intent();
 
 		Log.d(TAG,"Stop location service");
-		
+
 		service.setClass(this, LocationService.class);
 		stopService(service);
-		
-//		service.setClass(this, LocationTrace.class);
-//		stopService(service);
-//		
-//		service.setClass(this, LocationUpload.class);
-//		stopService(service);
+
+		//		service.setClass(this, LocationTrace.class);
+		//		stopService(service);
+		//		
+		//		service.setClass(this, LocationUpload.class);
+		//		stopService(service);
 	}
 
 
 	private class AuthorizeTask extends AsyncTask<Void, Void, Boolean> {
 
 		protected Boolean doInBackground(Void... progress) {
-			return authorize();
+			authToken = getAuthToken();
+			Boolean result = authorize(authToken);
+			if(!result) {
+				try {
+					//try reseting the authtoken and trying again
+					GoogleLoginServiceBlockingHelper.invalidateAuthToken(whatsnoisy.this, authToken);
+				} catch (GoogleLoginServiceNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				result=authorize(authToken);
+			}
+
+			return result;
 		}
 
 		protected void onPostExecute(Boolean result) {
 			//save if we have been authenticated or not
 			preferences.edit().putBoolean("authenticated", result).commit();
-			
+
 			if(result) {
 				Log.d(TAG, "authorized");
-				
+
 				startServices();
 
 
@@ -123,7 +139,7 @@ public class whatsnoisy extends Activity {
 					whatsnoisy.this.startService(uploadService);
 				}
 				sdb.close();
-				
+
 				ldb = new LocationDatabase(whatsnoisy.this);
 				ldb.open();
 				if(ldb.hasSamples()) {
@@ -132,7 +148,7 @@ public class whatsnoisy extends Activity {
 					whatsnoisy.this.startService(uploadService);
 				}
 				ldb.close();
-				
+
 				//start recording intent
 				Intent act = new Intent(whatsnoisy.this, Record.class);
 				whatsnoisy.this.startActivityForResult(act, RECORD_FINISHED);
@@ -150,13 +166,13 @@ public class whatsnoisy extends Activity {
 						Intent act = new Intent(whatsnoisy.this, Record.class);
 						whatsnoisy.this.startActivityForResult(act, RECORD_FINISHED);
 					}})
-				.setNegativeButton(android.R.string.cancel, new OnClickListener(){
+					.setNegativeButton(android.R.string.cancel, new OnClickListener(){
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finish();
-					}})
-				.create();
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+						}})
+						.create();
 
 				alert.show();
 			}
@@ -164,23 +180,52 @@ public class whatsnoisy extends Activity {
 
 
 
-			
+
 		}
 
 	}
 
 
-	protected boolean authorize() {
+	protected String getAuthToken() {
+		GoogleLoginServiceBlockingHelper loginHelper = null;
+		String username = null;
+		String authToken = null;
+
+		try {
+			loginHelper = new GoogleLoginServiceBlockingHelper(this);
+
+			// TODO: allow caller to specify which account's feeds should be updated
+			username = loginHelper.getAccount(false);
+			if (TextUtils.isEmpty(username)) {
+				Log.w(TAG, "no users configured.");
+				return null;
+			}
+
+			try {
+				authToken = loginHelper.getAuthToken(username,
+				"ah");
+			} catch (GoogleLoginServiceBlockingHelper.AuthenticationException e) {
+				Log.w(TAG, "could not "
+						+ "authenticate user " + username, e);
+				return null;
+			}
+		} catch (GoogleLoginServiceNotFoundException e) {
+			Log.e(TAG, "Could not find Google login service", e);
+			return null;
+		} finally {
+			if (loginHelper != null) {
+				loginHelper.close();
+			}
+		}
+		return authToken;
+	}
+
+	protected boolean authorize(String authToken) {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 
-		String auth = preferences.getString("AUTHTOKEN", "");
-		if(auth=="") {
-			return false;
-		}
 
 		String base_url = getString(R.string.base_url);
-
-		HttpGet auth_request = new HttpGet(base_url + "/_ah/login?continue=" + base_url + "&auth="+auth);
+		HttpGet auth_request = new HttpGet(base_url + "/_ah/login?continue=" + base_url + "&auth="+authToken);
 		HttpResponse response;
 
 
@@ -209,35 +254,4 @@ public class whatsnoisy extends Activity {
 		return false;
 	}
 
-	protected void updateAuthToken() {
-		Bundle bundle = new Bundle();
-		bundle.putCharSequence("optional_message", "no optional message?");
-		GoogleLoginServiceHelper.getCredentials(
-				this,
-				GET_ACCOUNT_REQUEST,
-				bundle,
-				GoogleLoginServiceConstants.PREFER_HOSTED,
-				"ah",
-				true);
-	}
-
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		super.onActivityResult(requestCode, resultCode, intent);
-		if (requestCode == GET_ACCOUNT_REQUEST) {
-			if (resultCode == RESULT_OK) {
-				if (intent != null) {
-					Bundle extras = intent.getExtras();
-					if (extras != null) {
-
-						preferences.edit().putString("AUTHTOKEN", extras.getString(GoogleLoginServiceConstants.AUTHTOKEN_KEY)).commit();
-
-						new AuthorizeTask().execute();
-
-					}
-				}
-			} 
-		} else if (requestCode == RECORD_FINISHED) {
-			finish();
-		}
-	}
 }
