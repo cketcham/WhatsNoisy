@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -31,15 +33,17 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import edu.ucla.cens.whatsnoisy.tools.CustomHttpClient;
+import edu.ucla.cens.whatsnoisy.tools.PolylineEncoder;
+import edu.ucla.cens.whatsnoisy.tools.Track;
 import edu.ucla.cens.whatsnoisy.R;
 import edu.ucla.cens.whatsnoisy.Settings;
 import edu.ucla.cens.whatsnoisy.data.LocationDatabase;
 import edu.ucla.cens.whatsnoisy.data.LocationDatabase.LocationRow;
 
-public class LocationUpload extends Service{
+public class LocationTraceUpload extends Service{
 
 	private LocationDatabase ldb;
-	private static final String TAG = "LocationUploadThread";
+	private static final String TAG = "LocationTraceUploadThread";
 	private CustomHttpClient httpClient;
 	private SharedPreferences preferences;
 	private PostThread post;
@@ -95,50 +99,32 @@ public class LocationUpload extends Service{
 					ArrayList<LocationRow>  entries = ldb.fetchAllPoints();
 					ldb.close();
 
+					PolylineEncoder pe = new PolylineEncoder();
+					HashMap<String, String> encoded = pe.dpEncode(new Track(entries));
+				
+					
 					Log.d(TAG, "Points to submit: " + Integer.toString(entries.size()));
 
 					if(entries.size() != 0) {
-						JSONStringer locjson = new JSONStringer();
-						locjson.array();
+	
 
-						for (int i=0; i < entries.size(); i++)
-						{
-							LocationRow locpoint = entries.get(i);
 
-							locjson.object();
-							locjson.key("latitude");
-							locjson.value(locpoint.location.getLatitude());
-							locjson.key("longitude");
-							locjson.value(locpoint.location.getLongitude());
-							locjson.key("time");
-							locjson.value(locpoint.location.getTime());
-							locjson.endObject();		
-						}
 
-						locjson.endArray();
+						
+						Log.d(TAG,encoded.toString());
 
-						String xmldata = "<table><row>";
-						xmldata += "<field name=\"location\">";
-						xmldata += locjson.toString();
-						xmldata += "</field>";
-						xmldata += "<field name=\"datetime\">";
-						Date date = new Date();
-						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
-						xmldata += dateFormat.format(date);
-						xmldata += "</field>";						
-						xmldata += "</row></table>";
-
+						Iterator<String> iter = encoded.values().iterator();
 
 						List<NameValuePair> params = new ArrayList<NameValuePair>();
-						params.add(new BasicNameValuePair("data_string", xmldata));
-						params.add(new BasicNameValuePair("type", "xml"));
-
-
+						params.add(new BasicNameValuePair("encodedPoints", iter.next().toString()));
+						params.add(new BasicNameValuePair("encodedLevels", iter.next().toString()));
+						params.add(new BasicNameValuePair("zoomFactor", Integer.toString(pe.getZoomFactor())));
+						params.add(new BasicNameValuePair("numLevels", Integer.toString(pe.getNumLevels())));
 
 
 						try
 						{
-							if(httpClient.doPost(getString(R.string.location_post_url), params))
+							if(httpClient.doPost(getString(R.string.trace_post_url), params))
 							{
 
 //								for (int i=0;i < entries.size(); i++) {
@@ -156,16 +142,13 @@ public class LocationUpload extends Service{
 						}
 
 					}
-					LocationUpload.this.stopSelf();
+					LocationTraceUpload.this.stopSelf();
 					// Sleeping for some minutes
 					Thread.sleep(new Long(preferences.getString("location_upload_frequency", "5"))*60000);
 				}
 			}
 			catch (InterruptedException e) 
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

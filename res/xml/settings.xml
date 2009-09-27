@@ -41,6 +41,12 @@
                     android:title="@string/location_upload_quick_toggle_title"
                     android:summary="@string/location_upload_quick_toggle_summary"
                     android:persistent="true" />
+                    
+                <CheckBoxPreference
+                    android:key="location_trace_upload"
+                    android:title="Location Trace Upload"
+                    android:summary="Upload encoded location trace"
+                    android:persistent="true" />
 
                 <CheckBoxPreference
                     android:key="toggle_audio_upload"

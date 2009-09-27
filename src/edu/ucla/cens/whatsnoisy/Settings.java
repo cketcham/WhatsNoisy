@@ -17,6 +17,7 @@
 package edu.ucla.cens.whatsnoisy;
 
 import edu.ucla.cens.whatsnoisy.services.LocationTrace;
+import edu.ucla.cens.whatsnoisy.services.LocationTraceUpload;
 import edu.ucla.cens.whatsnoisy.services.LocationUpload;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import android.content.Intent;
@@ -35,6 +36,8 @@ public class Settings extends PreferenceActivity {
 	private static final CharSequence KEY_TOGGLE_LOCATION_UPLOAD = "toggle_location_upload";
 	private static final CharSequence KEY_LOCATION_UPLOAD_FREQUENCY = "location_upload_frequency";
 
+	private static final CharSequence KEY_LOCATION_TRACE_UPLOAD = "location_trace_upload";
+	
 	
 	public static final String NAME = "edu.ucla.cens.whatsnoisy_preferences";
 
@@ -58,6 +61,8 @@ public class Settings extends PreferenceActivity {
 					service.setClass(Settings.this, LocationTrace.class);
 				} else if(preference.getKey().equals(KEY_TOGGLE_LOCATION_UPLOAD)) {
 					service.setClass(Settings.this, LocationUpload.class);
+				} else if(preference.getKey().equals(KEY_LOCATION_TRACE_UPLOAD)) {
+					service.setClass(Settings.this, LocationTraceUpload.class);
 				}
 				
 				if((Boolean) newValue) {
@@ -78,6 +83,9 @@ public class Settings extends PreferenceActivity {
 
 		CheckBoxPreference locationTrace = (CheckBoxPreference) preferenceScreen.findPreference(KEY_TOGGLE_LOCATION_TRACE);
 		locationTrace.setOnPreferenceChangeListener(pcl);
+		
+		CheckBoxPreference locationTraceUpload = (CheckBoxPreference) preferenceScreen.findPreference(KEY_LOCATION_TRACE_UPLOAD);
+		locationTraceUpload.setOnPreferenceChangeListener(pcl);
 		
 		EditTextPreference minDistance = (EditTextPreference) preferenceScreen.findPreference(KEY_MIN_UPDATE_DISTANCE);
 		minDistance.setDefaultValue("10");
