@@ -1,5 +1,6 @@
 package edu.ucla.cens.whatsnoisy;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,12 +11,15 @@ import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase.SampleRow;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
+import edu.ucla.cens.whatsnoisy.tools.PCMRecorder;
+import edu.ucla.cens.whatsnoisy.tools.RawAudioRecorder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcel;
@@ -38,7 +42,7 @@ public class Record extends Activity {
 	protected static final int UPDATE_TIME = 0;
 	
 	private Button recordButton;
-	private static AudioRecorder a;
+	private static RawAudioRecorder a;
 	private LocationManager lManager;
 	private SampleDatabase sdb;
 	
@@ -56,7 +60,7 @@ public class Record extends Activity {
 		sdb = new SampleDatabase(this);
 		
 		if(a == null)
-			a = new AudioRecorder();
+			a = new RawAudioRecorder();
 		
 		counter = (TextView)this.findViewById(R.id.timer);
 		
@@ -86,34 +90,29 @@ public class Record extends Activity {
 			public void onClick(View v) {
 				//start recording if not already recording
 				if(!a.isRecording()) {
-					a = new AudioRecorder();
-					try {
+					a = new RawAudioRecorder();
+					
+					Thread th = new Thread(a);
+					a.setFileName(new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.raw"));
+					th.start();
+					a.setRecording(true);
+	
 						startTime = SystemClock.uptimeMillis();
 						
 						timerHandler.postDelayed(recordingTimer, 0);
 						recordButton.setText("Stop Recording");
-						a.start();
-						
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+	
 				} else {
-					try {
-						
+
 						Intent recordMetaData = new Intent(Record.this, RecordMetaData.class);
 						Record.this.startActivityForResult(recordMetaData, SAVE_SAMPLE);
 						
-						a.stop();
+						a.setRecording(false);
 						
 						counter.setText("00:00:00");
 						timerHandler.removeCallbacks(recordingTimer);
 						recordButton.setText("Start Recording");
-						
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+
 				}
 			}
 		});
@@ -148,7 +147,7 @@ public class Record extends Activity {
 				sample.type = data.getStringExtra("type");
 				sample.location = loc;
 				sample.datetime = new Date();
-				sample.path = a.getPath();
+				//sample.path = a.getPath();
 				
 				Log.d(TAG,"path = " + sample.path);
 
