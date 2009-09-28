@@ -127,11 +127,11 @@ public class LocationTraceUpload extends Service{
 							if(httpClient.doPost(getString(R.string.trace_post_url), params))
 							{
 
-//								for (int i=0;i < entries.size(); i++) {
-//									ldb.open();
-//									ldb.deletePoint(entries.get(i).key);
-//									ldb.close();
-//								}
+								for (int i=0;i < entries.size(); i++) {
+									ldb.open();
+									ldb.deletePoint(entries.get(i).key);
+									ldb.close();
+								}
 							}
 						}
 						catch (Exception e) 
@@ -142,7 +142,7 @@ public class LocationTraceUpload extends Service{
 						}
 
 					}
-					LocationTraceUpload.this.stopSelf();
+					//LocationTraceUpload.this.stopSelf();
 					// Sleeping for some minutes
 					Thread.sleep(new Long(preferences.getString("location_upload_frequency", "5"))*60000);
 				}
