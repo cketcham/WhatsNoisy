@@ -254,4 +254,12 @@ public class whatsnoisy extends Activity {
 		return false;
 	}
 
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
+		if (requestCode == RECORD_FINISHED) {
+			finish();
+		}
+	}
+
+
 }
