@@ -29,8 +29,10 @@ import edu.ucla.cens.whatsnoisy.Record;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -52,9 +54,11 @@ public class whatsnoisy extends Activity {
 	private static final int RECORD_FINISHED = 0;
 	private static final String TAG = "whatsnoisy";
 	private static final int SHOW_HELP = 2;
+	protected static final int START_GPS = 3;
 	SharedPreferences preferences;
 	private SampleDatabase sdb;
 	private LocationDatabase ldb;
+	LocationManager manager;
 	private String authToken = "";
 
 	/** Called when the activity is first created. */
@@ -65,14 +69,37 @@ public class whatsnoisy extends Activity {
 
 		preferences = this.getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
 		
+		manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+		
 		if(preferences.getBoolean("firstboot", true)){
 			preferences.edit().putBoolean("firstboot", false).commit();
 			startActivityForResult(new Intent(this, Help.class), SHOW_HELP);
+		} else if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+			buildAlertMessageNoGps();
 		} else {
-		
 			authUser();
 		}
+		
 	}
+	
+	  private void buildAlertMessageNoGps() {
+		    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		    builder.setMessage("Yout GPS seems to be disabled, You need GPS to run this application. do you want to enable it?")
+		           .setCancelable(false)
+		           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		               public void onClick(final DialogInterface dialog, final int id) {
+		           		 whatsnoisy.this.startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), START_GPS);
+		               }
+		           })
+		           .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		               public void onClick(final DialogInterface dialog, final int id) {
+		            	   whatsnoisy.this.finish();
+		               }
+		           });
+		    final AlertDialog alert = builder.create();
+		    alert.show();
+		}
 	
 	private void authUser() {
 		//should start the create account page if user account is not linked to phone
@@ -245,8 +272,17 @@ public class whatsnoisy extends Activity {
 		else if (requestCode == GET_ACCOUNT_REQUEST) {
 			authToken = intent.getStringExtra(GoogleLoginServiceConstants.AUTHTOKEN_KEY);
 			new AuthorizeTask().execute();
-		} else if (requestCode == SHOW_HELP) {
+		} 
+		else if (requestCode == SHOW_HELP) {
 			authUser();
+		} 
+		else if (requestCode == START_GPS ){
+			Log.d(TAG, "Started GPS?");
+			if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+				buildAlertMessageNoGps();
+			} else {
+				authUser();
+			}
 		}
 	}
 

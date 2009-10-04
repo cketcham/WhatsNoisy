@@ -55,7 +55,7 @@ public class LocationTraceUpload extends Service{
 		preferences = getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
 
 		//do not upload if we aren't authenticated, or upload is turned off
-		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_location_upload", false))
+		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("location_trace_upload", false))
 		{
 			stopSelf();
 		} else {
