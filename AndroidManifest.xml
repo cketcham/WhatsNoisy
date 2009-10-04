@@ -17,13 +17,13 @@
         	</intent-filter>
         </activity>
         <activity android:name=".Record"></activity>
+        <activity android:name=".Help"></activity>
         <activity android:name=".RecordMetaData"></activity>
 
 		
 		<service android:name="edu.ucla.cens.whatsnoisy.services.SampleUpload"></service>
 		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationTrace"></service>
 		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationService"></service>
-		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationUpload"></service>
 		<service android:name="edu.ucla.cens.whatsnoisy.services.LocationTraceUpload"></service>
     </application>
     <uses-sdk android:minSdkVersion="3" />

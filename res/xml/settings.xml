@@ -1,58 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
-
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-  
-          http://www.apache.org/licenses/LICENSE-2.0
-  
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
--->
-
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         android:title="@string/settings_title">
-
-                <!-- Programmatically will have dynamic summary, but we provide the fallback summary. -->                    
+        
+        	<PreferenceCategory android:title="Audio Preferences">
+                 <CheckBoxPreference
+                    android:key="toggle_audio_upload"
+                    android:title="Upload Audio"
+                    android:summary="Upload your Audio Recordings. Uncheck to save battery."
+                    android:persistent="true" />
+            </PreferenceCategory>
+			<PreferenceCategory android:title="Location Preferences">
+                
                 <CheckBoxPreference
                     android:key="toggle_location_trace"
-                    android:title="@string/location_trace_quick_toggle_title"
-                    android:summary="@string/location_trace_quick_toggle_summary"
+                    android:title="Track Route"
+                    android:summary="Start tracking Location and saving the Route to the phone"
                     android:persistent="true" />
                     
-                <EditTextPreference
-                	android:key="min_update_distance"
-                	android:title="Minimum Distance"
-                	android:summary="Minimum distance between saved Location points in Meters."
-                	android:persistent="true" /> 
-                	
-                <EditTextPreference
-                	android:key="location_upload_frequency"
-                	android:title="Location Upload Frequency"
-                	android:summary="The number of minutes to wait before uploading Locations again."
-                	android:persistent="true" /> 
-                    
-                <CheckBoxPreference
-                    android:key="toggle_location_upload"
-                    android:title="@string/location_upload_quick_toggle_title"
-                    android:summary="@string/location_upload_quick_toggle_summary"
-                    android:persistent="true" />
-                    
-                <CheckBoxPreference
+				<CheckBoxPreference
                     android:key="location_trace_upload"
-                    android:title="Location Trace Upload"
-                    android:summary="Upload encoded location trace"
+                    android:title="Upload Route"
+                    android:summary="Upload your Route. Uncheck to save battery."
                     android:persistent="true" />
+                    
+            </PreferenceCategory>
+            
+			<PreferenceCategory android:title="Developer Preferences">
+                <PreferenceScreen
+            		android:key="developer_pref_screen"
+            		android:title="Developer Settings"
+            		android:summary="Set developer settings. Nothing to change here for the average user">
+            		<EditTextPreference
+                		android:key="location_upload_frequency"
+                		android:title="Connection Frequency"
+                		android:summary="frequency between connection attempts for uploading"
+                		android:persistent="true" 
+                		android:defaultValue="5" /> 
+               		<EditTextPreference
+                		android:key="minimum_update_distance"
+                		android:title="Min Update Distance"
+                		android:summary="distance between location points."
+                		android:persistent="true" 
+                		android:defaultValue="0" /> 
+         		</PreferenceScreen>
+			</PreferenceCategory>
 
-                <CheckBoxPreference
-                    android:key="toggle_audio_upload"
-                    android:title="@string/audio_upload_quick_toggle_title"
-                    android:summary="@string/audio_upload_quick_toggle_summary"
-                    android:persistent="true" />
                     
 
  

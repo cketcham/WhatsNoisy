@@ -1,15 +1,8 @@
 package edu.ucla.cens.whatsnoisy;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import edu.ucla.cens.whatsnoisy.whatsnoisy;
-import edu.ucla.cens.whatsnoisy.R;
-import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
-import edu.ucla.cens.whatsnoisy.data.SampleDatabase.SampleRow;
-import edu.ucla.cens.whatsnoisy.services.SampleUpload;
-import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,8 +10,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.os.Parcel;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
@@ -26,6 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
+import edu.ucla.cens.whatsnoisy.data.SampleDatabase.SampleRow;
+import edu.ucla.cens.whatsnoisy.services.SampleUpload;
+import edu.ucla.cens.whatsnoisy.tools.AudioRecorder;
 
 public class Record extends Activity {
 	protected static final int SAVE_SAMPLE = 0;
@@ -147,7 +142,7 @@ public class Record extends Activity {
 				sample.title = data.getStringExtra("title");
 				sample.type = data.getStringExtra("type");
 				sample.location = loc;
-				sample.datetime = new Date();
+				sample.timestamp = new Date();
 				sample.path = a.getPath();
 				
 				Log.d(TAG,"path = " + sample.path);
@@ -191,7 +186,8 @@ public class Record extends Activity {
 
             break;
         case MENU_HELP:
-            // TODO: Open view specific dialog
+        	intent = new Intent(this, Help.class);
+            this.startActivity(intent);
             break;
         }
 

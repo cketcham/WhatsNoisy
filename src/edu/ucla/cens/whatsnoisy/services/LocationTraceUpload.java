@@ -54,19 +54,20 @@ public class LocationTraceUpload extends Service{
 
 		preferences = getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
 
-		post = new PostThread();
-
 		//do not upload if we aren't authenticated, or upload is turned off
-		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_location_upload", true))
+		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_location_upload", false))
 		{
 			stopSelf();
+		} else {
+
+			post = new PostThread();
+
+			ldb = new LocationDatabase(this);
+
+			httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
+
+			post.start();
 		}
-
-		ldb = new LocationDatabase(this);
-
-		httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
-
-		post.start();
 	}
 
 	@Override
@@ -78,7 +79,8 @@ public class LocationTraceUpload extends Service{
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "Stopping the thread");
-		post.exit();
+		if(post!=null)
+			post.exit();
 	}
 
 	public class PostThread extends Thread{
@@ -101,16 +103,16 @@ public class LocationTraceUpload extends Service{
 
 					PolylineEncoder pe = new PolylineEncoder();
 					HashMap<String, String> encoded = pe.dpEncode(new Track(entries));
-				
-					
+
+
 					Log.d(TAG, "Points to submit: " + Integer.toString(entries.size()));
 
 					if(entries.size() != 0) {
-	
 
 
 
-						
+
+
 						Log.d(TAG,encoded.toString());
 
 						Iterator<String> iter = encoded.values().iterator();

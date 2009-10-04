@@ -17,7 +17,7 @@ public class RecordMetaData extends Activity {
 	protected static final String TAG = "Record Metadata";
 	private Button submitButton;
 	private EditText title;
-	private RadioButton coolButton;
+	private RadioButton funButton;
 	private RadioButton noisyButton;
 	private String type;
 	
@@ -28,16 +28,15 @@ public class RecordMetaData extends Activity {
 		setContentView(R.layout.record_metadata);
 		
 		title = (EditText)this.findViewById(R.id.title);
-		coolButton = (RadioButton)this.findViewById(R.id.cool_button);
+		funButton = (RadioButton)this.findViewById(R.id.fun_button);
 		noisyButton = (RadioButton)this.findViewById(R.id.noisy_button);
 
 		submitButton = (Button)this.findViewById(R.id.submit_sample);
 		submitButton.setOnClickListener(new View.OnClickListener() { 
 			public void onClick(View v) {
-				//start recording if not already recording
-				
-				if(coolButton.isChecked())
-					type = "Cool";
+
+				if(funButton.isChecked())
+					type = "Fun";
 				else if(noisyButton.isChecked())
 					type = "Noisy";
 				else {
