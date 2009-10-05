@@ -99,7 +99,7 @@ public class SampleUpload extends Service{
 						try
 						{
 							Log.d(TAG, "Posting file");
-							if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation()))
+							if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation(), sample.timestamp))
 							{
 								if(file != null)
 								{

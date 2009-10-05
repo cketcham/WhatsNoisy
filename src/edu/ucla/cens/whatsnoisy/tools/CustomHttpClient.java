@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -73,7 +74,7 @@ public class CustomHttpClient extends DefaultHttpClient {
 	}	
 
 
-	public boolean postFile(String url, String filename, String title, String type, String location) throws Exception {
+	public boolean postFile(String url, String filename, String title, String type, String location, Date timestamp) throws Exception {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		
 		BasicClientCookie cookie = new BasicClientCookie("ACSID",authtoken);
@@ -94,6 +95,7 @@ public class CustomHttpClient extends DefaultHttpClient {
 		entity.addPart("title", new StringBody(title.toString()));
 		entity.addPart("type", new StringBody(type.toString()));
 		entity.addPart("location", new StringBody(location.toString()));
+		entity.addPart("timestamp", new StringBody(Long.toString(timestamp.getTime())));
 
 		File file = new File(filename.toString());
 		FileBody fileB = new FileBody(file);	    	

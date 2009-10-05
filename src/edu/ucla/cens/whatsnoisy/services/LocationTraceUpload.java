@@ -122,6 +122,7 @@ public class LocationTraceUpload extends Service{
 						params.add(new BasicNameValuePair("encodedLevels", iter.next().toString()));
 						params.add(new BasicNameValuePair("zoomFactor", Integer.toString(pe.getZoomFactor())));
 						params.add(new BasicNameValuePair("numLevels", Integer.toString(pe.getNumLevels())));
+						params.add(new BasicNameValuePair("timestamp", Long.toString(entries.get(0).location.getTime())));
 
 
 						try
