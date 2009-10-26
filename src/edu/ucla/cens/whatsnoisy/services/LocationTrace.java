@@ -54,9 +54,9 @@ public class LocationTrace extends Service {
 				saveToDatabase(l);
 				return;
 			}
-			
+
 			//Log.d(TAG, "distance between points = " + l.distanceTo(last_saved) + " " + new Long(preferences.getString("min_update_distance", "1")));
-			
+
 			if(last_saved != null && l.distanceTo(last_saved) >= new Long(preferences.getString("min_update_distance", "1"))){
 				saveToDatabase(l);
 			}
@@ -69,61 +69,63 @@ public class LocationTrace extends Service {
 	public void onCreate() {
 		Log.d(TAG, "Service Started");
 		super.onCreate();
-		
+
 		preferences = this.getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
-		
+
 		//do not start location trace if setting is off
 		if(!preferences.getBoolean("toggle_location_trace", false))
 		{
 			stopSelf();
-		}
+		} else {
 
-		conn = new ServiceConnection() {  
-			public void onServiceConnected(ComponentName name, IBinder binder) {
-				mService = ILocationService.Stub.asInterface(binder);
+			conn = new ServiceConnection() {  
+				public void onServiceConnected(ComponentName name, IBinder binder) {
+					mService = ILocationService.Stub.asInterface(binder);
 
-				try {
-					mService.registerCallback(ILocationServiceCallback);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					try {
+						mService.registerCallback(ILocationServiceCallback);
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-			}
-			public void onServiceDisconnected(ComponentName name) {
-				mService = null;
-			}
-		};
+				public void onServiceDisconnected(ComponentName name) {
+					mService = null;
+				}
+			};
 
-		Intent service = new Intent(this, LocationService.class);        
-		this.bindService(service, conn, BIND_AUTO_CREATE);     
-		
-		ldb = new LocationDatabase(this);
+			Intent service = new Intent(this, LocationService.class);        
+			this.bindService(service, conn, BIND_AUTO_CREATE);     
+
+			ldb = new LocationDatabase(this);
+		}
 	}
 
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "Service Stopped");
 		super.onDestroy();        
-
-		try {
-			if(mService != null)
-				mService.unregisterCallback(ILocationServiceCallback);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(conn != null) {
+			try {
+				if(mService != null)
+					mService.unregisterCallback(ILocationServiceCallback);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.unbindService(conn);
 		}
-		this.unbindService(conn);
 	}
 
 	private void saveToDatabase(Location l) {
 		Log.d(TAG, "Saving location to database");
-		
+
 		ldb.open();
 		ldb.createPoint(l);
 		ldb.close();
-		
+
 		last_saved = l;
-	
+
 	}
 
 	@Override

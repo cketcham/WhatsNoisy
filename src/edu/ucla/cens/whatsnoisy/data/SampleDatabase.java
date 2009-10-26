@@ -29,6 +29,7 @@ public class SampleDatabase {
 	public static final String KEY_LATITUDE = "lat";
 	public static final String KEY_LONGITUDE = "lon";
 	public static final String KEY_TYPE = "type";
+	public static final String KEY_TIMESTAMP = "timestamp";
 
 	private static final String DATABASE_NAME = "sample_db";
 	
@@ -53,6 +54,7 @@ public class SampleDatabase {
 		+ KEY_PATH + " text not null,"
 		+ KEY_LONGITUDE + " double not null,"
 		+ KEY_LATITUDE + " double not null,"
+		+ KEY_TIMESTAMP + " long not null,"
 		+ KEY_TYPE + " text not null"
 		+ ");";
 
@@ -62,7 +64,7 @@ public class SampleDatabase {
 		public String path;
 		public Location location = new Location(LocationManager.GPS_PROVIDER);
 		public String type;
-		public Date datetime;
+		public Date timestamp;
 		
 		public String getLocation() {
 			return Double.toString(this.location.getLatitude()) + "," + Double.toString(this.location.getLongitude());
@@ -70,12 +72,12 @@ public class SampleDatabase {
 		
 		public String getDatetime() {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
-			return dateFormat.format(datetime);
+			return dateFormat.format(timestamp);
 		}
 		
 		public void setDatetime(String string) throws ParseException {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");						
-			datetime = dateFormat.parse(string);
+			timestamp = dateFormat.parse(string);
 		}
 	}
 
@@ -124,7 +126,7 @@ public class SampleDatabase {
 	public SampleRow getSample(String key) {
 		Cursor c = db.query(DATABASE_TABLE, new String[] { KEY_ID,
 				KEY_TITLE, KEY_PATH, KEY_TYPE, KEY_LATITUDE,
-				KEY_LONGITUDE }, KEY_ID + "=?", new String[] { String
+				KEY_LONGITUDE, KEY_TIMESTAMP }, KEY_ID + "=?", new String[] { String
 				.valueOf(key) }, null, null, null);
 		SampleRow ret = new SampleRow();
 
@@ -135,6 +137,7 @@ public class SampleDatabase {
 			ret.type = c.getString(3);
 			ret.location.setLatitude(c.getDouble(4));
 			ret.location.setLongitude(c.getDouble(5));
+			ret.timestamp = new Date(c.getLong(6));
 		}
 
 		c.close();
@@ -149,6 +152,7 @@ public class SampleDatabase {
 		vals.put(SampleDatabase.KEY_TYPE, row.type);
 		vals.put(SampleDatabase.KEY_LATITUDE, row.location.getLatitude());
 		vals.put(SampleDatabase.KEY_LONGITUDE, row.location.getLongitude());
+		vals.put(SampleDatabase.KEY_TIMESTAMP, row.timestamp.getTime());
 
 		long rowid = db.insert(DATABASE_TABLE, null, vals);
 		
@@ -219,7 +223,7 @@ public class SampleDatabase {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 		return db.query(DATABASE_TABLE, new String[] { KEY_ID, KEY_TITLE,
-				KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE },
+				KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE, KEY_TIMESTAMP },
 				KEY_TYPE + "=?", new String[] { String.valueOf(type) }, null,
 				null, null);
 	}
@@ -227,7 +231,7 @@ public class SampleDatabase {
 	public ArrayList <SampleRow>  fetchAllSamples() {
 		ArrayList<SampleRow> ret = new ArrayList<SampleRow>();
 
-			Cursor c = db.query(DATABASE_TABLE, new String[] {KEY_ID, KEY_TITLE, KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE, KEY_TYPE}, null, null, null, null, null);
+			Cursor c = db.query(DATABASE_TABLE, new String[] {KEY_ID, KEY_TITLE, KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE, KEY_TYPE, KEY_TIMESTAMP}, null, null, null, null, null);
 			int numRows = c.getCount();
 			
 			c.moveToFirst();
@@ -242,6 +246,7 @@ public class SampleDatabase {
 				sr.location.setLatitude(c.getDouble(3));
 				sr.location.setLongitude(c.getDouble(4));
 				sr.type = c.getString(5);
+				sr.timestamp = new Date(c.getLong(6));
 				
 				ret.add(sr);
 				
@@ -257,7 +262,7 @@ public class SampleDatabase {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 		return db.query(DATABASE_TABLE, new String[] { KEY_ID, KEY_TITLE,
-				KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE },
+				KEY_PATH, KEY_LATITUDE, KEY_LONGITUDE, KEY_TIMESTAMP },
 				null, null, null, null, null);
 	}
 

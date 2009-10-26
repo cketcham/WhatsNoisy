@@ -2,55 +2,33 @@ package edu.ucla.cens.whatsnoisy.tools;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 
-import edu.ucla.cens.whatsnoisy.whatsnoisy;
-
-import android.app.Activity;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 public class CustomHttpClient extends DefaultHttpClient {
-	private final int CONNECT_TIMEOUT = 10000;
-	private final int SOCKET_TIMEOUT = 10000;
 	private static final String TAG = "HttpClient";
 	private final String authtoken;
 
 	public CustomHttpClient(String authtoken){
-		HttpParams httpParams = this.getParams();
-		HttpConnectionParams.setConnectionTimeout(httpParams, CONNECT_TIMEOUT);
-		HttpConnectionParams.setSoTimeout(httpParams, SOCKET_TIMEOUT);
-
 		this.authtoken = authtoken;
 	}
 
@@ -96,7 +74,7 @@ public class CustomHttpClient extends DefaultHttpClient {
 	}	
 
 
-	public boolean postFile(String url, String filename, String title, String type, String location) throws Exception {
+	public boolean postFile(String url, String filename, String title, String type, String location, Date timestamp) throws Exception {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		
 		BasicClientCookie cookie = new BasicClientCookie("ACSID",authtoken);
@@ -117,6 +95,7 @@ public class CustomHttpClient extends DefaultHttpClient {
 		entity.addPart("title", new StringBody(title.toString()));
 		entity.addPart("type", new StringBody(type.toString()));
 		entity.addPart("location", new StringBody(location.toString()));
+		entity.addPart("timestamp", new StringBody(Long.toString(timestamp.getTime())));
 
 		File file = new File(filename.toString());
 		FileBody fileB = new FileBody(file);	    	

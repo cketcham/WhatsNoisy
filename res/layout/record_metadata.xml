@@ -19,7 +19,7 @@
 		android:layout_height="wrap_content"
 		>
 		<RadioButton android:text="Noisy" android:id="@+id/noisy_button" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<RadioButton android:text="Cool" android:id="@+id/cool_button" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+		<RadioButton android:text="Fun" android:id="@+id/fun_button" android:layout_width="wrap_content" android:layout_height="wrap_content" />
 	</RadioGroup>
 	<Button
 		android:id="@+id/submit_sample"

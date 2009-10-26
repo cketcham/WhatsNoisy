@@ -36,24 +36,24 @@ public class SampleUpload extends Service{
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
+
 		preferences = getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
-		
-		post = new PostThread();
-		
+
 		//do not upload if we aren't authenticated, or upload is turned off
-		Log.d(TAG, "toggle_audio_upload is " + preferences.getBoolean("toggle_audio_upload", false));
-		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_audio_upload", true))
+		if(!preferences.getBoolean("authenticated", false) || !preferences.getBoolean("toggle_audio_upload", false))
 		{
 			stopSelf();
+		} else {
+
+			post = new PostThread();
+
+			sdb = new SampleDatabase(this);
+
+			httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
+
+
+			post.start();
 		}
-		
-		sdb = new SampleDatabase(this);
-		
-		httpClient = new CustomHttpClient(preferences.getString("AUTHCOOKIE", ""));
-
-
-		post.start();
 	}
 
 	@Override
@@ -65,13 +65,14 @@ public class SampleUpload extends Service{
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "Stopping the thread");
-		post.exit();
+		if(post != null)
+			post.exit();
 	}
 
 	public class PostThread extends Thread{
-		
+
 		public Boolean runThread = true;
-		
+
 		public void run(){
 
 			try {
@@ -98,7 +99,7 @@ public class SampleUpload extends Service{
 						try
 						{
 							Log.d(TAG, "Posting file");
-							if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation()))
+							if(httpClient.postFile(getString(R.string.upload_url), sample.path, sample.title, sample.type, sample.getLocation(), sample.timestamp))
 							{
 								if(file != null)
 								{
@@ -120,13 +121,13 @@ public class SampleUpload extends Service{
 							Log.d(TAG, "threw an IOException for sending file.");
 							e.printStackTrace();	
 						}
-						
+
 
 					}
-					
+
 					// Sleeping for 5 mintutes?
 					Thread.sleep(1*60000);
-					
+
 				} 
 			}
 			catch (InterruptedException e) 
@@ -135,7 +136,7 @@ public class SampleUpload extends Service{
 				e.printStackTrace();
 			}
 		}
-	
+
 		public void exit()
 		{
 			runThread = false;

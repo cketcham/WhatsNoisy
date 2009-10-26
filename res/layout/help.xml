@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:id="@+id/ScrollView01"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<LinearLayout
+		android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:gravity="center_horizontal" android:id="@+id/LinearLayout01">
+		<TextView
+			android:id="@+id/help_title" android:layout_width="wrap_content" android:padding="10px" android:textAppearance="?android:attr/textAppearanceLarge"
+			android:layout_height="wrap_content" android:text="WhatsNoisy!"></TextView>
+		<TextView
+			android:id="@+id/help_text" android:layout_width="wrap_content" android:padding="10px" 
+			android:layout_height="wrap_content" android:text="Use WhatsNoisy to capture both fun and noisy sounds that you hear around you. Noisy sounds might be the garbage truck outside your window in the morning, someone using a leaf blower, or traffic as it goes past your house. Cool sounds could be whatever you find interesting like the music of a street performer, the rush of a stream, or just the birds chirping outside. \n\nTechnical Notes: \nThis application has two parts. The main Audio Record Screen lets you record an audio sample and upload it, the Route Track uses GPS to save your route as you move. Use the menu button to access the settings which will allow you to choose when recordings should be uploaded, if you want to track your route and when your route should be uploaded. We use the google account associated with your phone. If you have not linked an account to your phone you will be asked to do so. You can use this account to login to our web server at whatsnoisy.appspot.com. You can go there to hear your recordings and look at your location traces."></TextView>
+	</LinearLayout>
+</ScrollView>

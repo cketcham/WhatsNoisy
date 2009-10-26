@@ -23,14 +23,17 @@ import edu.ucla.cens.whatsnoisy.data.LocationDatabase;
 import edu.ucla.cens.whatsnoisy.data.SampleDatabase;
 import edu.ucla.cens.whatsnoisy.services.LocationService;
 import edu.ucla.cens.whatsnoisy.services.LocationTrace;
-import edu.ucla.cens.whatsnoisy.services.LocationUpload;
+import edu.ucla.cens.whatsnoisy.services.LocationTraceUpload;
 import edu.ucla.cens.whatsnoisy.services.SampleUpload;
 import edu.ucla.cens.whatsnoisy.Record;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,9 +53,12 @@ public class whatsnoisy extends Activity {
 	private static final int GET_ACCOUNT_REQUEST = 1;
 	private static final int RECORD_FINISHED = 0;
 	private static final String TAG = "whatsnoisy";
+	private static final int SHOW_HELP = 2;
+	protected static final int START_GPS = 3;
 	SharedPreferences preferences;
 	private SampleDatabase sdb;
 	private LocationDatabase ldb;
+	LocationManager manager;
 	private String authToken = "";
 
 	/** Called when the activity is first created. */
@@ -62,8 +68,48 @@ public class whatsnoisy extends Activity {
 		setContentView(R.layout.main);
 
 		preferences = this.getSharedPreferences(Settings.NAME, Activity.MODE_PRIVATE);
+		
+		manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
 
-		new AuthorizeTask().execute();
+		
+		if(preferences.getBoolean("firstboot", true)){
+			preferences.edit().putBoolean("firstboot", false).commit();
+			startActivityForResult(new Intent(this, Help.class), SHOW_HELP);
+		} else if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+			buildAlertMessageNoGps();
+		} else {
+			authUser();
+		}
+		
+	}
+	
+	  private void buildAlertMessageNoGps() {
+		    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		    builder.setMessage("Yout GPS seems to be disabled, You need GPS to run this application. do you want to enable it?")
+		           .setCancelable(false)
+		           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		               public void onClick(final DialogInterface dialog, final int id) {
+		           		 whatsnoisy.this.startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), START_GPS);
+		               }
+		           })
+		           .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		               public void onClick(final DialogInterface dialog, final int id) {
+		            	   whatsnoisy.this.finish();
+		               }
+		           });
+		    final AlertDialog alert = builder.create();
+		    alert.show();
+		}
+	
+	private void authUser() {
+		//should start the create account page if user account is not linked to phone
+		GoogleLoginServiceHelper.getCredentials(
+				this,
+				GET_ACCOUNT_REQUEST,
+				null,
+				GoogleLoginServiceConstants.PREFER_HOSTED,
+				"ah",
+				true);
 	}
 
 	private void startServices() {
@@ -74,8 +120,11 @@ public class whatsnoisy extends Activity {
 
 		service.setClass(this, LocationTrace.class);
 		startService(service);
-
-		service.setClass(this, LocationUpload.class);
+		
+		service.setClass(this, LocationTraceUpload.class);
+		startService(service);
+		
+		service.setClass(this, SampleUpload.class);
 		startService(service);
 	}
 
@@ -93,19 +142,14 @@ public class whatsnoisy extends Activity {
 
 		service.setClass(this, LocationService.class);
 		stopService(service);
-
-		//		service.setClass(this, LocationTrace.class);
-		//		stopService(service);
-		//		
-		//		service.setClass(this, LocationUpload.class);
-		//		stopService(service);
 	}
 
 
 	private class AuthorizeTask extends AsyncTask<Void, Void, Boolean> {
 
 		protected Boolean doInBackground(Void... progress) {
-			authToken = getAuthToken();
+			//authToken = getAuthToken();
+			
 			Boolean result = authorize(authToken);
 			if(!result) {
 				try {
@@ -125,10 +169,10 @@ public class whatsnoisy extends Activity {
 			//save if we have been authenticated or not
 			preferences.edit().putBoolean("authenticated", result).commit();
 
+			startServices();
+			
 			if(result) {
 				Log.d(TAG, "authorized");
-
-				startServices();
 
 
 				sdb = new SampleDatabase(whatsnoisy.this);
@@ -144,7 +188,7 @@ public class whatsnoisy extends Activity {
 				ldb.open();
 				if(ldb.hasSamples()) {
 					Log.d(TAG,"location database has locations");
-					Intent uploadService = new Intent(whatsnoisy.this, LocationUpload.class);
+					Intent uploadService = new Intent(whatsnoisy.this, LocationTraceUpload.class);
 					whatsnoisy.this.startService(uploadService);
 				}
 				ldb.close();
@@ -184,40 +228,6 @@ public class whatsnoisy extends Activity {
 	}
 
 
-	protected String getAuthToken() {
-		GoogleLoginServiceBlockingHelper loginHelper = null;
-		String username = null;
-		String authToken = null;
-
-		try {
-			loginHelper = new GoogleLoginServiceBlockingHelper(this);
-
-			// TODO: allow caller to specify which account's feeds should be updated
-			username = loginHelper.getAccount(false);
-			if (TextUtils.isEmpty(username)) {
-				Log.w(TAG, "no users configured.");
-				return null;
-			}
-
-			try {
-				authToken = loginHelper.getAuthToken(username,
-				"ah");
-			} catch (GoogleLoginServiceBlockingHelper.AuthenticationException e) {
-				Log.w(TAG, "could not "
-						+ "authenticate user " + username, e);
-				return null;
-			}
-		} catch (GoogleLoginServiceNotFoundException e) {
-			Log.e(TAG, "Could not find Google login service", e);
-			return null;
-		} finally {
-			if (loginHelper != null) {
-				loginHelper.close();
-			}
-		}
-		return authToken;
-	}
-
 	protected boolean authorize(String authToken) {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 
@@ -256,6 +266,21 @@ public class whatsnoisy extends Activity {
 		super.onActivityResult(requestCode, resultCode, intent);
 		if (requestCode == RECORD_FINISHED) {
 			finish();
+		}
+		else if (requestCode == GET_ACCOUNT_REQUEST) {
+			authToken = intent.getStringExtra(GoogleLoginServiceConstants.AUTHTOKEN_KEY);
+			new AuthorizeTask().execute();
+		} 
+		else if (requestCode == SHOW_HELP) {
+			authUser();
+		} 
+		else if (requestCode == START_GPS ){
+			Log.d(TAG, "Started GPS?");
+			if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+				buildAlertMessageNoGps();
+			} else {
+				authUser();
+			}
 		}
 	}
 
