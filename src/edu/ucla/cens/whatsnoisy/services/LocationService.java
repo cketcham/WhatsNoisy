@@ -1,7 +1,7 @@
 package edu.ucla.cens.whatsnoisy.services;
 
-import edu.ucla.cens.virtualworld.services.ILocationService;
-import edu.ucla.cens.virtualworld.services.ILocationServiceCallback;
+import edu.ucla.cens.whatsnoisy.services.ILocationService;
+import edu.ucla.cens.whatsnoisy.services.ILocationServiceCallback;
 import edu.ucla.cens.whatsnoisy.Settings;
 import edu.ucla.cens.whatsnoisy.services.LocationService;
 
@@ -54,7 +54,6 @@ public class LocationService extends Service {
 	private final RemoteCallbackList<ILocationServiceCallback> m_callbacks = new RemoteCallbackList<ILocationServiceCallback>();
 	
 	private final ILocationService.Stub binder = new ILocationService.Stub(){		
-		@Override
 		public void registerCallback(ILocationServiceCallback cb)
 				throws RemoteException {
 			if (cb != null) {
@@ -62,7 +61,6 @@ public class LocationService extends Service {
 			}
 		}
 
-		@Override
 		public void unregisterCallback(ILocationServiceCallback cb)
 				throws RemoteException {
 			Log.d(TAG, "unregister callback");

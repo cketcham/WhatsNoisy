@@ -160,7 +160,6 @@ public class whatsnoisy extends Activity {
 				.setMessage("Whats Noisy Could Not authenticate with Google. Please make sure this phone is linked to a google account and try again. You can continue but samples will not be uploaded until you are authenticated.")					
 				.setPositiveButton("Continue", new OnClickListener(){
 
-					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						//start recording intent
 						Intent act = new Intent(whatsnoisy.this, Record.class);
@@ -168,7 +167,6 @@ public class whatsnoisy extends Activity {
 					}})
 					.setNegativeButton(android.R.string.cancel, new OnClickListener(){
 
-						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							finish();
 						}})

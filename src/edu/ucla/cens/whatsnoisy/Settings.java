@@ -52,7 +52,6 @@ public class Settings extends PreferenceActivity {
 
 		Preference.OnPreferenceChangeListener pcl = new Preference.OnPreferenceChangeListener() {
 
-			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				Intent service = new Intent();
 				if(preference.getKey().equals(KEY_TOGGLE_AUDIO_UPLOAD)) {

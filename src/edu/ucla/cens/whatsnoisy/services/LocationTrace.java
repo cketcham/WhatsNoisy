@@ -23,8 +23,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import edu.ucla.cens.virtualworld.services.ILocationService;
-import edu.ucla.cens.virtualworld.services.ILocationServiceCallback;
+import edu.ucla.cens.whatsnoisy.services.ILocationService;
+import edu.ucla.cens.whatsnoisy.services.ILocationServiceCallback;
 import edu.ucla.cens.whatsnoisy.R;
 import edu.ucla.cens.whatsnoisy.Settings;
 import edu.ucla.cens.whatsnoisy.data.LocationDatabase;
@@ -47,7 +47,6 @@ public class LocationTrace extends Service {
 
 	private final ILocationServiceCallback ILocationServiceCallback = new ILocationServiceCallback.Stub(){
 
-		@Override
 		public void locationUpdated(Location l) throws RemoteException {
 			//Log.d(TAG, "Starting Location updated");
 
